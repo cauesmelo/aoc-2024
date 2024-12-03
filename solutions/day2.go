@@ -57,8 +57,39 @@ func (AOC) Day2_part1() int {
 	return count
 }
 
-func (AOC) Day2_part2() int {
-	// lines := util.GetInput(1, true)
+func getSliceExcludingIdx(numbers []int, idx int) []int {
+	slice := make([]int, 0)
+	for i, n := range numbers {
+		if i == idx {
+			continue
+		}
 
-	return 0
+		slice = append(slice, n)
+	}
+
+	return slice
+}
+
+func (AOC) Day2_part2() int {
+	lines := util.GetInput(2, false)
+
+	count := 0
+	for _, line := range lines {
+		numbers := util.GetNumbers(line)
+
+		combination := make([][]int, 0)
+
+		for idx := range numbers {
+			combination = append(combination, getSliceExcludingIdx(numbers, idx))
+		}
+
+		for _, c := range combination {
+			if checkSafety(c) {
+				count++
+				break
+			}
+		}
+	}
+
+	return count
 }
