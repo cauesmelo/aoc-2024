@@ -146,8 +146,73 @@ func (AOC) Day4_part1() int {
 	return sum
 }
 
-func (AOC) Day4_part2() int {
-	// lines := util.GetInput(1, true)
+func hasMASInX(matrix []string) bool {
 
-	return 0
+	mCount := 0
+	sCount := 0
+
+	searchPositions := [][2]int{
+		{0, 0},
+		{0, 2},
+		{2, 0},
+		{2, 2},
+	}
+
+	for _, pos := range searchPositions {
+		if matrix[pos[0]][pos[1]] == 'M' {
+			mCount++
+		}
+
+		if matrix[pos[0]][pos[1]] == 'S' {
+			sCount++
+		}
+	}
+
+	if mCount != 2 || sCount != 2 {
+		return false
+	}
+
+	sampleWord := string(matrix[0][0]) + string(matrix[1][1]) + string(matrix[2][2])
+
+	if sampleWord == "SAS" || sampleWord == "MAM" {
+		return false
+	}
+
+	return true
+}
+
+func countMASInX(matrix []string) int {
+
+	count := 0
+
+	maxIdx := len(matrix) - 1
+
+	for line := 0; line < len(matrix); line++ {
+		for col := 0; col < len(matrix); col++ {
+			if line-1 < 0 || col-1 < 0 || line+1 > maxIdx || col+1 > maxIdx {
+				continue
+			}
+
+			if string(matrix[line][col]) != "A" {
+				continue
+			}
+
+			cutoutMatrix := make([]string, 0)
+			for i := line - 1; i <= line+1; i++ {
+				cutoutMatrix = append(cutoutMatrix, matrix[i][col-1:col+2])
+			}
+
+			if hasMASInX(cutoutMatrix) {
+				count++
+			}
+		}
+	}
+
+	return count
+}
+
+func (AOC) Day4_part2() int {
+	lines := util.GetInput(4, false)
+
+	return countMASInX(lines)
 }
