@@ -8,6 +8,23 @@ import (
 	"strings"
 )
 
+func GetNumbersSep(line string, sep string) []int {
+	parts := strings.Split(line, sep)
+
+	numbers := make([]int, 0)
+
+	for _, part := range parts {
+		val, err := strconv.Atoi(part)
+		if err != nil {
+			panic(err)
+		}
+
+		numbers = append(numbers, val)
+	}
+
+	return numbers
+}
+
 func GetNumbers(line string) []int {
 	re := regexp.MustCompile(`-?\d+`)
 
