@@ -38,8 +38,9 @@ func readInput(lines []string) ([]rule, []update) {
 	return rules, updates
 }
 
-func getUpdatesInRightOrder(rules []rule, updates []update) []update {
+func getUpdatesInRightOrder(rules []rule, updates []update) ([]update, []update) {
 	correctUpdates := updates
+	wrongUpdates := []update{}
 
 	for _, rule := range rules {
 		for updateIdx := len(correctUpdates) - 1; updateIdx >= 0; updateIdx-- {
@@ -64,12 +65,13 @@ func getUpdatesInRightOrder(rules []rule, updates []update) []update {
 			if beforePos != -1 && afterPos != -1 {
 				if beforePos > afterPos {
 					correctUpdates = append(correctUpdates[:updateIdx], correctUpdates[updateIdx+1:]...)
+					wrongUpdates = append(wrongUpdates, update)
 				}
 			}
 		}
 	}
 
-	return correctUpdates
+	return correctUpdates, wrongUpdates
 }
 
 func sumMiddlePageNumberFromUpdates(updates []update) int {
@@ -87,14 +89,87 @@ func (AOC) Day5_part1() int {
 	lines := util.GetInput(5, false)
 
 	rules, updates := readInput(lines)
-	correctUpdates := getUpdatesInRightOrder(rules, updates)
+	correctUpdates, _ := getUpdatesInRightOrder(rules, updates)
 	sumOfMiddlePageNumbers := sumMiddlePageNumberFromUpdates(correctUpdates)
 
 	return sumOfMiddlePageNumbers
 }
 
-func (AOC) Day5_part2() int {
-	// lines := util.GetInput(1, true)
+func fixWrongUpdate(updates []update, rules []rule) ([]update, int) {
+	correctedUpdates := updates
+	fixCount := 0
 
-	return 0
+	for _, rule := range rules {
+		for updateIdx := len(correctedUpdates) - 1; updateIdx >= 0; updateIdx-- {
+			update := correctedUpdates[updateIdx]
+			beforePos := -1
+			afterPos := -1
+
+			for i, change := range update {
+				if change == rule.before {
+					beforePos = i
+				}
+
+				if change == rule.after {
+					afterPos = i
+				}
+			}
+
+			if beforePos == -1 && afterPos == -1 {
+				continue
+			}
+
+			if beforePos != -1 && afterPos != -1 {
+				if beforePos > afterPos {
+					correctedUpdate := []int{}
+
+					for _, change := range update {
+						if change == rule.after {
+							correctedUpdate = append(correctedUpdate, update[beforePos])
+							correctedUpdate = append(correctedUpdate, rule.after)
+						} else if change != rule.before {
+							correctedUpdate = append(correctedUpdate, change)
+						}
+					}
+
+					newCorrectedUpdates := [][]int{}
+
+					newCorrectedUpdates = append(newCorrectedUpdates, correctedUpdates[:updateIdx]...)
+					newCorrectedUpdates = append(newCorrectedUpdates, correctedUpdate)
+					newCorrectedUpdates = append(newCorrectedUpdates, correctedUpdates[updateIdx+1:]...)
+
+					correctedUpdates = newCorrectedUpdates
+					fixCount++
+				}
+			}
+		}
+	}
+
+	return correctedUpdates, fixCount
+}
+
+func (AOC) Day5_part2() int {
+	lines := util.GetInput(5, false)
+
+	rules, updates := readInput(lines)
+	_, wrongUpdates := getUpdatesInRightOrder(rules, updates)
+	fixedUpdates, fixCount := fixWrongUpdate(wrongUpdates, rules)
+
+	c := 0
+	for {
+		if fixCount == 0 {
+			break
+		}
+
+		if c > 3000 {
+			break
+		}
+
+		fixedUpdates, fixCount = fixWrongUpdate(fixedUpdates, rules)
+		c++
+	}
+
+	sum := sumMiddlePageNumberFromUpdates(fixedUpdates)
+
+	return sum
 }
