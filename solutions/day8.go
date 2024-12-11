@@ -43,11 +43,15 @@ func projectAntinodesForAntenna(lines []string, antinodeMap [][]rune, x int, y i
 	}
 }
 
-func projectAntinodes(lines []string, antinodeMap [][]rune) {
+func projectAntinodes(lines []string, antinodeMap [][]rune, part2 bool) {
 	for lineIdx, line := range lines {
 		for chIdx, ch := range line {
 			if ch != '.' {
-				projectAntinodesForAntenna(lines, antinodeMap, chIdx, lineIdx)
+				if part2 {
+					projectAntinodesForAntenna2(lines, antinodeMap, chIdx, lineIdx)
+				} else {
+					projectAntinodesForAntenna(lines, antinodeMap, chIdx, lineIdx)
+				}
 			}
 		}
 	}
@@ -72,13 +76,72 @@ func (AOC) Day8_part1() int {
 
 	antinodeMap := createAntinodeMap(len(lines[0]))
 
-	projectAntinodes(lines, antinodeMap)
+	projectAntinodes(lines, antinodeMap, false)
 
 	return countAntinodes(antinodeMap)
 }
 
-func (AOC) Day8_part2() int {
-	// lines := util.GetInput(8, true)
+func isAntennaTheOnly(lines []string, x int, y int) bool {
+	antennaCh := rune(lines[y][x])
+	for lineIdx, line := range lines {
+		for chIdx, ch := range line {
+			if ch != antennaCh {
+				continue
+			}
 
-	return 0
+			if x == chIdx && y == lineIdx {
+				continue
+			}
+
+			return false
+		}
+	}
+
+	return true
+}
+
+func projectAntinodesForAntenna2(lines []string, antinodeMap [][]rune, x int, y int) {
+	antennaCh := rune(lines[y][x])
+	for lineIdx, line := range lines {
+		for chIdx, ch := range line {
+			if ch != antennaCh {
+				continue
+			}
+
+			xDiff := x - chIdx
+			yDiff := y - lineIdx
+
+			if xDiff == 0 && yDiff == 0 {
+				if !isAntennaTheOnly(lines, x, y) {
+					antinodeMap[y][x] = '#'
+				}
+
+				continue
+			}
+
+			xDelta := x + xDiff
+			yDelta := y + yDiff
+
+			for {
+				if xDelta < 0 || yDelta < 0 || xDelta > len(lines)-1 || yDelta > len(lines)-1 {
+					break
+				}
+
+				antinodeMap[yDelta][xDelta] = '#'
+
+				xDelta += xDiff
+				yDelta += yDiff
+			}
+		}
+	}
+}
+
+func (AOC) Day8_part2() int {
+	lines := util.GetInput(8, false)
+
+	antinodeMap := createAntinodeMap(len(lines[0]))
+
+	projectAntinodes(lines, antinodeMap, true)
+
+	return countAntinodes(antinodeMap)
 }
