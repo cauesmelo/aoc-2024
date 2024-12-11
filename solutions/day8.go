@@ -1,0 +1,84 @@
+package solutions
+
+import (
+	"github.com/cauesmelo/aoc-2024/util"
+)
+
+func createAntinodeMap(size int) [][]rune {
+	antinodeMap := make([][]rune, size)
+
+	for i := range antinodeMap {
+		for j := 0; j < size; j++ {
+			antinodeMap[i] = append(antinodeMap[i], '.')
+		}
+	}
+
+	return antinodeMap
+}
+
+func projectAntinodesForAntenna(lines []string, antinodeMap [][]rune, x int, y int) {
+	antennaCh := rune(lines[y][x])
+	for lineIdx, line := range lines {
+		for chIdx, ch := range line {
+			if ch != antennaCh {
+				continue
+			}
+
+			xDiff := x - chIdx
+			yDiff := y - lineIdx
+
+			if xDiff == 0 && yDiff == 0 {
+				continue
+			}
+
+			xDelta := x + xDiff
+			yDelta := y + yDiff
+
+			if xDelta < 0 || yDelta < 0 || xDelta > len(lines)-1 || yDelta > len(lines)-1 {
+				continue
+			}
+
+			antinodeMap[yDelta][xDelta] = '#'
+		}
+	}
+}
+
+func projectAntinodes(lines []string, antinodeMap [][]rune) {
+	for lineIdx, line := range lines {
+		for chIdx, ch := range line {
+			if ch != '.' {
+				projectAntinodesForAntenna(lines, antinodeMap, chIdx, lineIdx)
+			}
+		}
+	}
+}
+
+func countAntinodes(antinodeMap [][]rune) int {
+	count := 0
+
+	for i := range antinodeMap {
+		for j := range antinodeMap[i] {
+			if antinodeMap[i][j] == '#' {
+				count++
+			}
+		}
+	}
+
+	return count
+}
+
+func (AOC) Day8_part1() int {
+	lines := util.GetInput(8, false)
+
+	antinodeMap := createAntinodeMap(len(lines[0]))
+
+	projectAntinodes(lines, antinodeMap)
+
+	return countAntinodes(antinodeMap)
+}
+
+func (AOC) Day8_part2() int {
+	// lines := util.GetInput(8, true)
+
+	return 0
+}
