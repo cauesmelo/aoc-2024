@@ -37,7 +37,7 @@ func isEquationPossible(eq *equation, idx int, acc int) bool {
 		return isEquationPossible(eq, idx+1, eq.factors[idx])
 	}
 
-	if acc == eq.result {
+	if acc == eq.result && idx == len(eq.factors) {
 		return true
 	}
 
@@ -71,8 +71,54 @@ func (AOC) Day7_part1() int {
 	return getSumOfPossibleEquations(eqs)
 }
 
-func (AOC) Day7_part2() int {
-	// lines := util.GetInput(1, true)
+func isEquationPossible2(eq *equation, idx int, acc int) bool {
+	if idx == 0 {
+		return isEquationPossible2(eq, idx+1, eq.factors[idx])
+	}
 
-	return 0
+	if acc == eq.result && idx == len(eq.factors) {
+		return true
+	}
+
+	if idx == len(eq.factors) {
+		return false
+	}
+
+	if acc > eq.result {
+		return false
+	}
+
+	if isEquationPossible2(eq, idx+1, acc+eq.factors[idx]) {
+		return true
+	}
+
+	if isEquationPossible2(eq, idx+1, acc*eq.factors[idx]) {
+		return true
+	}
+
+	v := strconv.Itoa(acc)
+	v2 := strconv.Itoa(eq.factors[idx])
+	vfs := v + v2
+	vfi, _ := strconv.Atoi(vfs)
+
+	return isEquationPossible2(eq, idx+1, vfi)
+}
+
+func getSumOfPossibleEquations2(equations []equation) int {
+	sum := 0
+
+	for _, eq := range equations {
+		if isEquationPossible2(&eq, 0, 0) {
+			sum += eq.result
+		}
+	}
+
+	return sum
+}
+
+func (AOC) Day7_part2() int {
+	lines := util.GetInput(7, false)
+	eqs := parseEquations(lines)
+
+	return getSumOfPossibleEquations2(eqs)
 }
