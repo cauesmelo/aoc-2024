@@ -96,8 +96,131 @@ func (AOC) Day9_part1() int {
 	return getChecksum(compactDisk)
 }
 
-func (AOC) Day9_part2() int {
-	// lines := util.GetInput(1, true)
+type slot struct {
+	digit string
+	size  int
+	used  bool
+}
 
-	return 0
+func compactDiskv2(disk string) string {
+	parsedDisk := strings.Split(disk, ";")
+	parsedDisk = parsedDisk[:len(parsedDisk)-1]
+
+	slots := make([]*slot, 0)
+
+	for _, item := range parsedDisk {
+		if len(slots) == 0 {
+			slots = append(slots, &slot{
+				digit: item,
+				size:  len(item),
+				used:  false,
+			})
+
+			continue
+		}
+
+		lastSlotDigit := slots[len(slots)-1].digit
+
+		if item == lastSlotDigit {
+			slots[len(slots)-1].size++
+		} else {
+			slots = append(slots, &slot{
+				digit: item,
+				size:  1,
+				used:  false,
+			})
+		}
+	}
+
+	compactedSlots := make([]slot, 0)
+
+	for sIdx := 0; sIdx < len(slots); sIdx++ {
+		s := slots[sIdx]
+
+		if s.digit != "." && !s.used {
+			s.used = true
+			compactedSlots = append(compactedSlots, *s)
+			continue
+		}
+
+		freeSpace := s.size
+
+		for i := len(slots) - 1; i > 0; i-- {
+			if slots[i].used {
+				continue
+			}
+
+			if slots[i].size > freeSpace {
+				continue
+			}
+
+			if slots[i].digit == "." {
+				continue
+			}
+
+			compactedSlots = append(compactedSlots, *slots[i])
+			freeSpace -= slots[i].size
+			slots[i].used = true
+
+			if freeSpace <= 0 {
+				break
+			}
+		}
+
+		if freeSpace > 0 {
+			compactedSlots = append(compactedSlots, slot{
+				digit: ".",
+				size:  freeSpace,
+				used:  true,
+			})
+		}
+	}
+
+	compactDisk := ""
+
+	for _, slot := range compactedSlots {
+		for i := 0; i < slot.size; i++ {
+			compactDisk += slot.digit + ";"
+		}
+	}
+
+	return compactDisk
+}
+
+func mountDiskv2(digits string) string {
+	disk := ""
+	currN := 0
+	isFile := true
+
+	for i := 0; i < len(digits); i++ {
+		nTimes, _ := strconv.Atoi(string(digits[i]))
+
+		if nTimes > 0 {
+
+			if isFile {
+				n := strconv.Itoa(currN)
+				for j := 0; j < nTimes; j++ {
+					disk += n + ";"
+				}
+				currN++
+			} else {
+				for j := 0; j < nTimes; j++ {
+					disk += "." + ";"
+				}
+			}
+		}
+
+		isFile = !isFile
+	}
+
+	return disk
+}
+
+func (AOC) Day9_part2() int {
+	lines := util.GetInput(9, false)
+
+	disk := mountDiskv2(lines[0])
+	compactDisk := compactDiskv2(disk)
+
+	return getChecksum(compactDisk)
 }
