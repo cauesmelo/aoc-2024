@@ -61,8 +61,51 @@ func (AOC) Day11_part1() int {
 	return len(stones)
 }
 
-func (AOC) Day11_part2() int {
-	// lines := util.GetInput(1, true)
+func blink2(stoneMap map[int]int) map[int]int {
+	newMap := make(map[int]int)
 
-	return 0
+	for k, v := range stoneMap {
+		if k == 0 {
+			newMap[1] += v
+			continue
+		}
+
+		if isIntEvenDigits(k) {
+			splitted := splitIntInHalf(k)
+
+			newMap[splitted[0]] += v
+			newMap[splitted[1]] += v
+			continue
+		}
+
+		newMap[k*2024] += v
+	}
+
+	return newMap
+}
+
+func (AOC) Day11_part2() int {
+	lines := util.GetInput(11, false)
+
+	stones := util.GetNumbers(lines[0])
+
+	stoneMap := make(map[int]int)
+
+	for _, v := range stones {
+		stoneMap[v] += 1
+	}
+
+	blinks := 75
+
+	for i := 0; i < blinks; i++ {
+		stoneMap = blink2(stoneMap)
+	}
+
+	sum := 0
+
+	for _, v := range stoneMap {
+		sum += v
+	}
+
+	return sum
 }
