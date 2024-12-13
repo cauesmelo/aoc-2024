@@ -8,7 +8,7 @@ import (
 	"github.com/cauesmelo/aoc-2024/solutions"
 )
 
-const CURRENT_DAY = 9
+const CURRENT_DAY = 10
 
 func part(n int) int {
 	aoc := reflect.ValueOf(solutions.AOC{})
