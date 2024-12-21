@@ -1,7 +1,6 @@
 package solutions
 
 import (
-	"math"
 	"regexp"
 	"strconv"
 	"strings"
@@ -63,28 +62,29 @@ func parseTarget(str string) clawMachineTarget {
 		y: yVal,
 	}
 }
-
-func optimizeClawRec(machine clawMachine, x, y, cost int) int {
-	if x > machine.target.x || y > machine.target.y {
-		return int(math.Inf(1))
-	}
-
-	costA := optimizeClawRec(machine, x+machine.a.xDelta, y+machine.a.yDelta, cost+machine.a.cost)
-	costB := optimizeClawRec(machine, x+machine.b.xDelta, y+machine.b.yDelta, cost+machine.b.cost)
-
-	if costA < costB {
-		return costA
-	}
-
-	return costB
-}
-
 func optimizeClaw(machine clawMachine) int {
-	return optimizeClawRec(machine, 0, 0, 0)
+	minCost := 0
+
+	for a := 0; a <= 100; a++ {
+		for b := 0; b <= 100; b++ {
+			xPos := machine.a.xDelta*a + machine.b.xDelta*b
+			yPos := machine.a.yDelta*a + machine.b.yDelta*b
+
+			if xPos == machine.target.x && yPos == machine.target.y {
+				c := a*machine.a.cost + b*machine.b.cost
+
+				if c < minCost || minCost == 0 {
+					minCost = c
+				}
+			}
+		}
+	}
+
+	return minCost
 }
 
 func (AOC) Day13_part1() int {
-	lines := util.GetInput(13, true)
+	lines := util.GetInput(13, false)
 
 	machines := make([]clawMachine, 0)
 
@@ -96,7 +96,13 @@ func (AOC) Day13_part1() int {
 		})
 	}
 
-	return optimizeClaw(machines[0])
+	totalCost := 0
+
+	for _, machine := range machines {
+		totalCost += optimizeClaw(machine)
+	}
+
+	return totalCost
 }
 
 func (AOC) Day13_part2() int {
