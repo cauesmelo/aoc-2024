@@ -1,6 +1,7 @@
 package solutions
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
 
@@ -124,8 +125,98 @@ func (AOC) Day14_part1() int {
 	return quadrants[0] * quadrants[1] * quadrants[2] * quadrants[3]
 }
 
-func (AOC) Day14_part2() int {
-	// lines := util.GetInput(13, false)
+func debugPrint(grid coord, robots []robot, seconds int) {
 
-	return 0
+	fmt.Printf("Seconds: %d\n", seconds)
+
+	for y := 0; y < grid.y; y++ {
+		for x := 0; x < grid.x; x++ {
+			found := false
+
+			for _, robot := range robots {
+				if robot.pos.x == x && robot.pos.y == y {
+					found = true
+					break
+				}
+			}
+
+			if found {
+				print("X")
+			} else {
+				print(".")
+			}
+		}
+
+		println()
+	}
+
+	fmt.Println("=========================================")
+}
+
+func generateGrid(size coord, robots []robot) [][]int {
+	grid := make([][]int, size.y)
+
+	for y := 0; y < size.y; y++ {
+		grid[y] = make([]int, size.x)
+	}
+
+	for _, robot := range robots {
+		grid[robot.pos.y][robot.pos.x] = 1
+	}
+
+	return grid
+}
+
+func getBiggestSequenceCol(grid [][]int) int {
+	biggestSeq := -1
+
+	for y := 0; y < len(grid); y++ {
+		seq := 0
+
+		for x := 0; x < len(grid[y]); x++ {
+			if grid[y][x] == 1 {
+				seq++
+			} else {
+				if seq > biggestSeq {
+					biggestSeq = seq
+				}
+
+				seq = 0
+			}
+		}
+	}
+
+	return biggestSeq
+}
+
+func (AOC) Day14_part2() int {
+	lines := util.GetInput(14, false)
+
+	robots := parseRobots(lines)
+
+	grid := coord{
+		x: 101,
+		y: 103,
+	}
+
+	biggestSequence := -1
+	biggestProbabilitySeconds := -1
+
+	for i := 0; i < 100000; i++ {
+		for rIdx, robot := range robots {
+			robots[rIdx].pos = walkRobot(grid, robot, 1)
+		}
+
+		g := generateGrid(grid, robots)
+
+		seq := getBiggestSequenceCol(g)
+
+		if seq > biggestSequence {
+			biggestSequence = seq
+			biggestProbabilitySeconds = i + 1
+			// debugPrint(grid, robots, i+1)
+		}
+	}
+
+	return biggestProbabilitySeconds
 }
